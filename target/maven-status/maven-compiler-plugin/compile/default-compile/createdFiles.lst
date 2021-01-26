@@ -1,0 +1,5 @@
+com\sender\demo\DemoApplication.class
+com\sender\demo\AdminController.class
+com\sender\demo\AmoIntegrationController.class
+com\sender\demo\CompanyDAO.class
+com\sender\demo\CompanyRepository.class
