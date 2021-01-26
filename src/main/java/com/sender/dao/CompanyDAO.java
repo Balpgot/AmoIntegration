@@ -117,7 +117,7 @@ public class CompanyDAO {
                         this.registrationYear = Integer.parseInt(value);
                         break;
                     case "Счета в банках":
-                        this.bankAccounts = value;
+                        this.bankAccounts = setMultiSelectValue(values);
                         break;
                     case "Обороты":
                         this.moneyFlow = value;

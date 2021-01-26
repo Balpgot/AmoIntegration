@@ -1,8 +1,6 @@
 package com.sender.service;
 
 import com.sender.dao.*;
-import com.sender.demo.dao.*;
-import com.sender.demo.repository.*;
 import com.sender.repository.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -18,12 +18,14 @@ import java.nio.file.StandardOpenOption;
 @Service
 public class AmoRequestService {
 
-    private String refreshToken = "***";
-    private String accessToken = "***";
-    private final String baseURL = "https://***.amocrm.ru";
-    private final String clientId = "***";
-    private final String clientSecret = "***";
-    private final String redirectURL = "***";
+    private String refreshToken = "";
+    private String accessToken = "";
+    private String baseURL = "";
+    private String clientId = "";
+    private String clientSecret = "";
+    private String redirectURL = "";
+    private File configurationFile = new File("C:\\Users\\cinil\\Documents\\GitHub\\AmoIntegration\\api.config");
+    private JSONObject configuration;
     private WebClient client = WebClient
             .builder()
             .exchangeStrategies(ExchangeStrategies.builder()
@@ -36,6 +38,18 @@ public class AmoRequestService {
             .build();
 
     public AmoRequestService() {
+        try {
+            this.configuration = JSON.parseObject(Files.readString(this.configurationFile.toPath()));
+            this.accessToken = configuration.getString("accessToken");
+            this.refreshToken = configuration.getString("refreshToken");
+            this.baseURL = configuration.getString("baseURL");
+            this.clientId = configuration.getString("clientId");
+            this.clientSecret = configuration.getString("clientSecret");
+            this.redirectURL = configuration.getString("redirectURL");
+        }
+        catch (IOException ex){
+            ex.printStackTrace();
+        }
     }
 
     public JSONObject getContactInfo(String contact_id){
@@ -118,8 +132,8 @@ public class AmoRequestService {
                         .bodyToMono(String.class)
                         .block();
                 JSONObject tokensInfo = JSON.parseObject(responseJson);
-                accessToken = tokensInfo.getString("access_token").trim();
-                refreshToken = tokensInfo.getString("refresh_token").trim();
+                this.accessToken = tokensInfo.getString("access_token").trim();
+                this.refreshToken = tokensInfo.getString("refresh_token").trim();
                 this.client = WebClient
                             .builder()
                             .baseUrl(baseURL)
@@ -129,8 +143,11 @@ public class AmoRequestService {
                 System.out.println(refreshToken);
                 System.out.println("AT");
                 System.out.println(accessToken);
-                Files.writeString(accessTokenFile.toPath(),"ATnew:"+accessToken, StandardOpenOption.APPEND);
-                Files.writeString(refreshTokenFile.toPath(),"RTnew:"+refreshToken, StandardOpenOption.APPEND);
+                this.configuration.put("accessToken",accessToken);
+                this.configuration.put("refreshToken",refreshToken);
+                Files.writeString(configurationFile.toPath(),configuration.toJSONString(),StandardOpenOption.WRITE);
+                Files.writeString(accessTokenFile.toPath(),accessToken, StandardOpenOption.WRITE);
+                Files.writeString(refreshTokenFile.toPath(),refreshToken, StandardOpenOption.WRITE);
             }
             else{
                 System.out.println("Failed to access files");
