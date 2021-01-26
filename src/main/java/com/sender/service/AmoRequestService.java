@@ -26,26 +26,27 @@ public class AmoRequestService {
     private String redirectURL = "";
     private File configurationFile = new File("C:\\Users\\cinil\\Documents\\GitHub\\AmoIntegration\\api.config");
     private JSONObject configuration;
-    private WebClient client = WebClient
-            .builder()
-            .exchangeStrategies(ExchangeStrategies.builder()
-                    .codecs(configurer -> configurer
-                            .defaultCodecs()
-                            .maxInMemorySize(16 * 1024 * 1024))
-                    .build())
-            .baseUrl(baseURL)
-            .defaultHeader("Authorization", "Bearer " + accessToken)
-            .build();
+    private WebClient client;
 
     public AmoRequestService() {
         try {
             this.configuration = JSON.parseObject(Files.readString(this.configurationFile.toPath()));
-            this.accessToken = configuration.getString("accessToken");
-            this.refreshToken = configuration.getString("refreshToken");
-            this.baseURL = configuration.getString("baseURL");
-            this.clientId = configuration.getString("clientId");
-            this.clientSecret = configuration.getString("clientSecret");
-            this.redirectURL = configuration.getString("redirectURL");
+            this.accessToken = configuration.getString("accessToken").trim();
+            this.refreshToken = configuration.getString("refreshToken").trim();
+            this.baseURL = configuration.getString("baseURL").trim();
+            this.clientId = configuration.getString("clientId").trim();
+            this.clientSecret = configuration.getString("clientSecret").trim();
+            this.redirectURL = configuration.getString("redirectURL").trim();
+            this.client = WebClient
+                    .builder()
+                    .exchangeStrategies(ExchangeStrategies.builder()
+                            .codecs(configurer -> configurer
+                                    .defaultCodecs()
+                                    .maxInMemorySize(16 * 1024 * 1024))
+                            .build())
+                    .baseUrl(baseURL)
+                    .defaultHeader("Authorization", "Bearer " + accessToken)
+                    .build();
         }
         catch (IOException ex){
             ex.printStackTrace();
@@ -78,8 +79,10 @@ public class AmoRequestService {
                     .bodyToMono(String.class)
                     .block();
         }
-        catch (WebClientResponseException exception){
-            HttpStatus status = exception.getStatusCode();
+        catch (Exception exception){
+            exception.printStackTrace();
+            WebClientResponseException ex = (WebClientResponseException) exception;
+            HttpStatus status = ex.getStatusCode();
             if(status.value()==401){
                 refreshTokens();
             }
