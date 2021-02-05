@@ -24,7 +24,8 @@ public class AmoRequestService {
     private String clientId = "";
     private String clientSecret = "";
     private String redirectURL = "";
-    private File configurationFile = new File("C:\\Users\\cinil\\Documents\\GitHub\\AmoIntegration\\api.config");
+    private File configurationFile = new File("./api.config");
+    //private File configurationFile = new File("C:\\Users\\cinil\\Documents\\GitHub\\AmoIntegration\\api.config");
     private JSONObject configuration;
     private WebClient client;
 
@@ -60,9 +61,6 @@ public class AmoRequestService {
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
-        System.out.println("CONTACT");
-        System.out.println(response);
-
         return JSON.parseObject(response);
     }
 
@@ -97,8 +95,6 @@ public class AmoRequestService {
                     .block();
 
         }
-        System.out.println("LEAD");
-        System.out.println(response);
         return JSON.parseObject(response);
     }
 

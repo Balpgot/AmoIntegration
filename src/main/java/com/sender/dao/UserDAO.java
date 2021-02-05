@@ -15,7 +15,6 @@ public class UserDAO {
     private String login;
     private String password;
     private String role;
-
     public UserDAO(String password){
         this.password = password;
     }

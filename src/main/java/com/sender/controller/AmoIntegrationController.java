@@ -4,21 +4,18 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.sender.dao.CompanyDAO;
-import com.sender.service.AmoRequestService;
 import com.sender.repository.CompanyRepository;
+import com.sender.service.AmoRequestService;
 import com.sender.service.EntityManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 public class AmoIntegrationController {
@@ -37,18 +34,23 @@ public class AmoIntegrationController {
     }
 
     @PostMapping(value = "/webhook", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseEntity<HttpStatus> getInfoFromWebhook(HttpEntity<String> httpEntity){
-        String webhook = URLDecoder.decode(httpEntity.getBody(), StandardCharsets.UTF_8);
+    public ResponseEntity<HttpStatus> getInfoFromWebhook(@RequestParam MultiValueMap params){
+        if(params!=null && params.containsKey("element_id")) {
+            String lead_id = String.valueOf(params.getFirst("element_id"));
+            checkLeadToAddInDatabase(lead_id);
+        /*String webhook = URLDecoder.decode(httpEntity.getBody(), StandardCharsets.UTF_8);
         System.out.println(webhook);
         String regex = "\\[element_id\\]=\\d*";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(webhook);
         if(matcher.find()){
             String element_id = matcher.group();
-            String lead_id = element_id.substring(element_id.indexOf("=")+1);
-            checkLeadToAddInDatabase(lead_id);
+            String lead_id = element_id.substring(element_id.indexOf("=")+1);*/
+            return new ResponseEntity<>(HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.OK);
+        else{
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping(value = "/tokens/refresh", consumes = MediaType.APPLICATION_JSON_VALUE)

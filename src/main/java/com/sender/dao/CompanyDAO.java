@@ -31,7 +31,7 @@ public class CompanyDAO {
     private String registrationDate;
     private Integer registrationYear;
     private String bankAccounts;
-    private String moneyFlow;
+    private String oborot;
     private String address;
     private String keepAddress;
     private String addressNote;
@@ -78,6 +78,24 @@ public class CompanyDAO {
             inverseJoinColumns = @JoinColumn(name = "bank_id"))
     private List<BankDAO> bank_list = new ArrayList<>();
 
+    public CompanyDAO(Long id, String mobile, String email, String form, String companyName, String inn, String city, LicenseDAO license, BankDAO bank) {
+        this.id = id;
+        this.mobile = mobile;
+        this.email = email;
+        this.form = form;
+        this.companyName = companyName;
+        this.inn = inn;
+        this.city = city;
+        this.bank_list.add(bank);
+        this.license_list.add(license);
+    }
+
+    public CompanyDAO(Long id, String name)
+    {
+        this.id = id;
+        this.companyName = name;
+    }
+
     public CompanyDAO(JSONObject company){
         try {
             this.id = company.getLong("id");
@@ -120,7 +138,7 @@ public class CompanyDAO {
                         this.bankAccounts = setMultiSelectValue(values);
                         break;
                     case "Обороты":
-                        this.moneyFlow = value;
+                        this.oborot = value;
                         break;
                     case "Адрес":
                         this.address = value;
@@ -186,7 +204,7 @@ public class CompanyDAO {
         String tags = "";
         for (Object tag:tagsArray) {
             JSONObject tagJSON = (JSONObject) tag;
-            tags = tags.concat(tagJSON.getString("name"));
+            tags = tags.concat(tagJSON.getString("name")).concat(";");
         }
         this.tags = tags;
     }
@@ -196,9 +214,46 @@ public class CompanyDAO {
         for (Object valueObject: valueArray) {
             JSONObject valueJSON = (JSONObject) valueObject;
             resultString.append(valueJSON.getString("value"));
-            resultString.append("; ");
+            resultString.append(";");
         }
         resultString.deleteCharAt(resultString.lastIndexOf(";"));
         return resultString.toString().trim();
+    }
+
+    public List<String> getCompanyAsListOfParameters() {
+        List<String> parameters = List.of(
+                String.valueOf(id),
+                tags,
+                name,
+                mobile,
+                email,
+                form,
+                companyName,
+                inn,
+                city,
+                sno,
+                registrationDate,
+                String.valueOf(registrationYear),
+                bankAccounts,
+                oborot,
+                address,
+                keepAddress,
+                addressNote,
+                nalog,
+                licensesString,
+                okvedString,
+                report,
+                ecp,
+                cpo,
+                goszakaz,
+                String.valueOf(workersCount),
+                elimination,
+                String.valueOf(price),
+                debt,
+                marriage,
+                comment,
+                post
+        );
+        return parameters;
     }
 }
