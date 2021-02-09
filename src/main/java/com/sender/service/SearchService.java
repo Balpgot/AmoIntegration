@@ -1,9 +1,9 @@
 package com.sender.service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.sender.dao.CompanyDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,106 +20,121 @@ public class SearchService {
         this.entityManager = entityManager;
     }
 
-    public List<CompanyDAO> searchCompanies(JSONObject searchCriteria){
-        String name = searchCriteria.getString("name");
+    public List<CompanyDAO> searchCompanies(MultiValueMap params) {
+        String name = (String) params.getFirst("name");
         Optional<CompanyDAO> company;
-        if(!name.isBlank()){
+        if (!name.isBlank()) {
             company = entityManager
                     .getCompanyRepository()
                     .findCompanyDAOByCompanyNameStartsWithIgnoreCase(name);
-            if(company.isPresent()) {
+            if (company.isPresent()) {
                 return List.of(company.get());
-            }
-            else{
+            } else {
                 return Collections.emptyList();
             }
         }
-        String inn = searchCriteria.getString("inn");
-        if(!inn.isBlank()){
+        String inn = String.valueOf(params.getFirst("inn"));
+        if (!inn.isBlank()) {
             company = entityManager
                     .getCompanyRepository()
                     .findCompanyDAOByInnStartsWithIgnoreCase(inn);
-            if(company.isPresent()) {
+            if (company.isPresent()) {
                 return List.of(company.get());
-            }
-            else{
+            } else {
                 return Collections.emptyList();
             }
         }
-        String phone = searchCriteria.getString("phone");
-        if(!phone.isBlank()){
+        String phone = String.valueOf(params.getFirst("phone"));
+        if (!phone.isBlank()) {
             company = entityManager
                     .getCompanyRepository()
                     .findCompanyDAOByMobileStartsWithIgnoreCase(phone);
-            if(company.isPresent()) {
+            if (company.isPresent()) {
                 return List.of(company.get());
-            }
-            else{
+            } else {
                 return Collections.emptyList();
             }
         }
-        String email = searchCriteria.getString("email");
-        if(!email.isBlank()){
+        String email = String.valueOf(params.getFirst("email"));
+        if (!email.isBlank()) {
             company = entityManager
                     .getCompanyRepository()
                     .findCompanyDAOByEmailStartsWithIgnoreCase(email);
-            if(company.isPresent()) {
+            if (company.isPresent()) {
                 return List.of(company.get());
-            }
-            else{
+            } else {
                 return Collections.emptyList();
             }
         }
-        String city = searchCriteria.getString("city");
-        String ownershipForm = searchCriteria.getString("form");
-        String sno = searchCriteria.getString("sno");
-        String year = searchCriteria.getString("year");
-        String bank = searchCriteria.getString("bank");
-        String urAddress = searchCriteria.getString("address");
-        String workers = searchCriteria.getString("workers");
-        String oborot = searchCriteria.getString("oborot");
-        String cpo = searchCriteria.getString("cpo");
-        String license = searchCriteria.getString("license");
-        String goszakaz = searchCriteria.getString("goszakaz");
+        String city = String.valueOf(params.getFirst("city"));
+        String ownershipForm = String.valueOf(params.getFirst("form"));
+        String sno = String.valueOf(params.getFirst("sno"));
+        String year = String.valueOf(params.getFirst("year"));
+        String bank = String.valueOf(params.getFirst("bank"));
+        String urAddress = String.valueOf(params.getFirst("address"));
+        String workers = String.valueOf(params.getFirst("workers"));
+        String oborot = String.valueOf(params.getFirst("oborot"));
+        String cpo = String.valueOf(params.getFirst("cpo"));
+        String license = String.valueOf(params.getFirst("license"));
+        String goszakaz = String.valueOf(params.getFirst("goszakaz"));
         List<CompanyDAO> firstSearchResult =
                 entityManager
-                .getCompanyRepository()
-                .findAllByCityStartsWithAndFormStartsWithAndSnoStartsWithAndBankAccountsContainsIgnoreCaseAndAddressStartsWithAndOborotStartsWithAndCpoContainsIgnoreCaseAndLicensesStringContainsAndGoszakazStartsWith(
-                        city,
-                        ownershipForm,
-                        sno,
-                        bank,
-                        urAddress,
-                        oborot,
-                        cpo,
-                        license,
-                        goszakaz
-                );
-        List<CompanyDAO> finalSearchResult = new ArrayList<>();
+                        .getCompanyRepository()
+                        .findAllByCityStartsWithAndFormStartsWithAndSnoStartsWithAndBankAccountsContainsIgnoreCaseAndAddressNoteStartsWithAndOborotStartsWithAndCpoContainsIgnoreCaseAndLicensesStringContainsAndGoszakazStartsWith(
+                                city,
+                                ownershipForm,
+                                sno,
+                                bank,
+                                urAddress,
+                                oborot,
+                                cpo,
+                                license,
+                                goszakaz
+                        );
         boolean searchByYear = !year.isBlank();
-        boolean searchByWorkers = !workers.isBlank();
-        /*if(searchByYear || searchByWorkers){
-            if(searchByYear && searchByWorkers){
-                for (CompanyDAO currCompany:firstSearchResult) {
-                    if (currCompany.getRegistrationYear().equals(Integer.valueOf(year))
-                    ) {
+        boolean searchByWorkers = true;
+        if(workers.isBlank() || workers.equalsIgnoreCase("Не важно")) {
+            searchByWorkers = false;
+        }
+        if (searchByYear || searchByWorkers) {
+            List<CompanyDAO> finalSearchResult = new ArrayList<>();
+            if (searchByYear && searchByWorkers) {
+                for (CompanyDAO currCompany : firstSearchResult) {
+                    if (currCompany.getRegistrationYear() <= Integer.parseInt(year)) {
+                        if(workers.equalsIgnoreCase("От 5")) {
+                            if (currCompany.getWorkersCount() >= 5){
+                                finalSearchResult.add(currCompany);
+                            }
+                        }
+                        else {
+                            if (currCompany.getWorkersCount().intValue() == Integer.valueOf(workers).intValue()) {
+                                finalSearchResult.add(currCompany);
+                            }
+                        }
+                    }
+                }
+            } else if (searchByYear) {
+                for (CompanyDAO currCompany : firstSearchResult) {
+                    if (currCompany.getRegistrationYear() <= Integer.parseInt(year)) {
                         finalSearchResult.add(currCompany);
                     }
                 }
-            }
-            else if(!year.isBlank()) {
-                if (currCompany.getRegistrationYear().equals(Integer.valueOf(year))) {
-                    finalSearchResult.add(currCompany);
+            } else {
+                for (CompanyDAO currCompany : firstSearchResult) {
+                    if(workers.equalsIgnoreCase("От 5")) {
+                        if (currCompany.getWorkersCount() >= 5){
+                            finalSearchResult.add(currCompany);
+                        }
+                    }
+                    else {
+                        if (currCompany.getWorkersCount().intValue() == Integer.valueOf(workers).intValue()) {
+                            finalSearchResult.add(currCompany);
+                        }
+                    }
                 }
             }
-            else if(!workers.isBlank()){
-                if(currCompany.getWorkersCount().equals(Integer.valueOf(workers))){
-                    finalSearchResult.add(currCompany);
-                }
-            }*/
-
-        return finalSearchResult;
+            return finalSearchResult;
+        }
+        return firstSearchResult;
     }
-
-
 }

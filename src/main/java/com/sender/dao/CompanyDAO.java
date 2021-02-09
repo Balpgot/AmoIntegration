@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 @Entity
@@ -19,36 +20,41 @@ public class CompanyDAO {
 
     @Id
     private Long id;
-    private String tags;
-    private String name;
-    private String mobile;
-    private String email;
-    private String form;
-    private String companyName;
-    private String inn;
-    private String city;
-    private String sno;
-    private String registrationDate;
-    private Integer registrationYear;
-    private String bankAccounts;
-    private String oborot;
-    private String address;
-    private String keepAddress;
-    private String addressNote;
-    private String nalog;
-    private String licensesString;
-    private String okvedString;
-    private String report;
-    private String ecp;
-    private String cpo;
-    private String goszakaz;
+    private String budget = "-1";
+    private String tags = "";
+    private String name = "";
+    private String mobile = "";
+    private String email = "";
+    private String form = "";
+    private String companyName = "";
+    private String inn = "";
+    private String city = "";
+    private String sno = "";
+    private String registrationDate = "";
+    private Integer registrationYear = -1;
+    private String bankAccounts  = "";
+    private String oborot  = "";
+    private String address  = "";
+    private String keepAddress  = "";
+    private String addressNote  = "";
+    private String nalog  = "";
+    private String licensesString  = "";
+    private String okvedString  = "";
+    private String report  = "";
+    private String ecp  = "";
+    private String cpo  = "";
+    private String goszakaz  = "";
+    private Integer founders = -1;
     private Integer workersCount;
-    private String elimination;
-    private Integer price;
-    private String debt;
-    private String marriage;
-    private String comment;
-    private String post;
+    private String elimination  = "";
+    private Integer price = -1;
+    private String debt  = "";
+    private String marriage  = "";
+    private String owner  = "";
+    private String aim  = "";
+    private String comment  = "";
+    private String post  = "";
+    private String notesString = "";
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -88,12 +94,6 @@ public class CompanyDAO {
         this.city = city;
         this.bank_list.add(bank);
         this.license_list.add(license);
-    }
-
-    public CompanyDAO(Long id, String name)
-    {
-        this.id = id;
-        this.companyName = name;
     }
 
     public CompanyDAO(JSONObject company){
@@ -158,7 +158,7 @@ public class CompanyDAO {
                     case "Отчетность":
                         this.report = value;
                         break;
-                    case "Количество сотрудников":
+                    case "Сотрудников":
                         this.workersCount = Integer.parseInt(value);
                         break;
                     case "Ликвидация":
@@ -187,6 +187,15 @@ public class CompanyDAO {
                         break;
                     case "Комментарии":
                         this.comment = value;
+                        break;
+                    case "Учредителей":
+                        this.founders = Integer.parseInt(value);
+                        break;
+                    case "Собственник/посредник":
+                        this.owner = value;
+                        break;
+                    case "Цель покупки(Для покупателей)":
+                        this.aim = value;
                         break;
                     case "Должность":
                         this.post = value;
@@ -220,9 +229,88 @@ public class CompanyDAO {
         return resultString.toString().trim();
     }
 
-    public List<String> getCompanyAsListOfParameters() {
+    private String getDateString(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(Long.parseLong(registrationDate)*1000);
+        StringBuilder dateString = new StringBuilder();
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH)+1;
+        int year = calendar.get(Calendar.YEAR);
+        if(day<10){
+            dateString.append(0);
+        }
+        dateString.append(day);
+        dateString.append(".");
+        if(month<10){
+            dateString.append(0);
+        }
+        dateString.append(month);
+        dateString.append(".");
+        dateString.append(year);
+        return dateString.toString();
+    }
+
+    public List<String> getCompanyAsListOfParametersClientFull() {
+        return List.of(
+                String.valueOf(id),
+                inn,
+                budget,
+                city,
+                sno,
+                getDateString(),
+                bankAccounts,
+                oborot,
+                address,
+                keepAddress,
+                addressNote,
+                nalog,
+                okvedString,
+                report,
+                ecp,
+                cpo,
+                licensesString,
+                goszakaz,
+                elimination,
+                debt,
+                String.valueOf(founders),
+                owner,
+                comment
+        );
+    }
+
+
+    public List<String> getCompanyAsListOfParametersClient() {
+        return List.of(
+                String.valueOf(id),
+                budget,
+                city,
+                sno,
+                String.valueOf(registrationYear),
+                bankAccounts,
+                oborot,
+                address,
+                keepAddress,
+                addressNote,
+                nalog,
+                okvedString,
+                report,
+                ecp,
+                cpo,
+                licensesString,
+                goszakaz,
+                elimination,
+                debt,
+                String.valueOf(founders),
+                owner,
+                comment
+        );
+    }
+
+    public List<String> getCompanyAsListOfParametersAdmin() {
         List<String> parameters = List.of(
                 String.valueOf(id),
+                budget,
+                String.valueOf(price),
                 tags,
                 name,
                 mobile,
@@ -232,7 +320,7 @@ public class CompanyDAO {
                 inn,
                 city,
                 sno,
-                registrationDate,
+                getDateString(),
                 String.valueOf(registrationYear),
                 bankAccounts,
                 oborot,
@@ -240,20 +328,46 @@ public class CompanyDAO {
                 keepAddress,
                 addressNote,
                 nalog,
-                licensesString,
                 okvedString,
                 report,
                 ecp,
                 cpo,
+                licensesString,
                 goszakaz,
                 String.valueOf(workersCount),
                 elimination,
-                String.valueOf(price),
                 debt,
                 marriage,
+                String.valueOf(founders),
+                owner,
                 comment,
                 post
         );
         return parameters;
+    }
+
+    public void setBudget(String budget) {
+        this.budget = budget;
+    }
+
+    public void setNotes(JSONObject notes){
+        if(notes!=null) {
+            JSONArray notesArray = ((JSONObject) notes.get("_embedded")).getJSONArray("notes");
+            JSONObject note;
+            StringBuilder builder = new StringBuilder();
+            for (Object noteObj : notesArray) {
+                note = (JSONObject) noteObj;
+                builder.append(note.getJSONObject("params").getString("text"));
+                builder.append(";");
+            }
+            builder.deleteCharAt(builder.length() - 1);
+            this.notesString = builder.toString();
+        }
+    }
+
+    public List<String> getNotesAsList(){
+        return List.of(
+                notesString.split(";")
+        );
     }
 }

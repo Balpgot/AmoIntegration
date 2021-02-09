@@ -64,6 +64,19 @@ public class AmoRequestService {
         return JSON.parseObject(response);
     }
 
+    public JSONObject getNotesInfo(String lead_id) {
+        String response;
+        response = client
+                .get()
+                .uri(UriBuilder -> UriBuilder
+                        .path("/api/v4/leads/" + lead_id + "/notes")
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+        return JSON.parseObject(response);
+    }
+
     public JSONObject getCompanyInfo(String lead_id){
         String response;
         try{

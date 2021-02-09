@@ -3,6 +3,7 @@ package com.sender.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.sender.bots.SenderTelegramBot;
 import com.sender.dao.CompanyDAO;
 import com.sender.repository.CompanyRepository;
 import com.sender.service.AmoRequestService;
@@ -23,14 +24,16 @@ public class AmoIntegrationController {
     private final CompanyRepository repository;
     private final AmoRequestService requestService;
     private final EntityManagerService entityManager;
+    private final SenderTelegramBot bot;
     private final String STATUS_IN_BASE = "36691654";
     private final String ADDED_TAG_ID = "83057";
 
     @Autowired
-    public AmoIntegrationController(CompanyRepository repository, AmoRequestService requestService,EntityManagerService entityManager){
+    public AmoIntegrationController(CompanyRepository repository, AmoRequestService requestService,EntityManagerService entityManager, SenderTelegramBot bot){
         this.repository = repository;
         this.requestService = requestService;
         this.entityManager = entityManager;
+        this.bot = bot;
     }
 
     @PostMapping(value = "/webhook", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -82,8 +85,11 @@ public class AmoIntegrationController {
             if(!contact_id.isBlank()){
                 JSONObject contact = requestService.getContactInfo(contact_id);
                 CompanyDAO company = new CompanyDAO(contact);
+                company.setBudget(lead.getString("price"));
                 company.setTags(lead_embedded.getJSONArray("tags"));
+                company.setNotes(requestService.getNotesInfo(lead_id));
                 entityManager.saveCompany(company);
+                bot.sendLeadInfo(company);
             }
         }
     }

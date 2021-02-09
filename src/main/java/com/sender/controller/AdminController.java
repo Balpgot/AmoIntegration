@@ -220,13 +220,15 @@ public class AdminController {
     }
 
     @PostMapping(value = "/admin/search", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<Resource> getSearchObject(MultiValueMap params) {
+    public ResponseEntity<Resource> getSearchObject(@RequestParam MultiValueMap params) {
         if (params != null) {
             System.out.println(params);
             File file;
             InputStreamResource resource;
             try {
-                file = ExcelService.createExcelFile(List.of(entityManager.getCompanyRepository().findCompanyDAOByMobileStartsWithIgnoreCase("+79995359742").get()));
+                List<CompanyDAO> searchResult = searchService.searchCompanies(params);
+                String admin = String.valueOf(params.getFirst("mode"));
+                file = ExcelService.createExcelFile(searchResult, admin);
                 HttpHeaders headers = new HttpHeaders();
                 headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=otchet.xls");
                 resource = new InputStreamResource(new FileInputStream(file));
@@ -252,9 +254,11 @@ public class AdminController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping(value = "/admin/company/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<CompanyDAO>> getAll(){
-        return new ResponseEntity<>(entityManager.getCompanyRepository().findAll(),HttpStatus.OK);
+    @PostMapping(value = "/admin/company/all", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<CompanyDAO>> getAll(@RequestParam MultiValueMap params){
+        System.out.println(params);
+        List<CompanyDAO> companyDAOS = searchService.searchCompanies(params);
+        return new ResponseEntity<>(companyDAOS,HttpStatus.OK);
     }
 
     @GetMapping(value = "/admin/download", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -262,7 +266,7 @@ public class AdminController {
         File file;
         InputStreamResource resource;
         try {
-            file = ExcelService.createExcelFile(entityManager.getCompanyRepository().findAll());
+            file = ExcelService.createExcelFile(entityManager.getCompanyRepository().findAll(), "admin");
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=otchet.xls");
             resource = new InputStreamResource(new FileInputStream(file));
