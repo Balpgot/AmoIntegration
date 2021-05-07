@@ -14,35 +14,27 @@ import java.util.regex.Pattern;
 @Service
 public class EntityManagerService {
 
-    private final String ADMIN = "ADMIN";
-    private final String MAIN_ADMIN = "MAIN_ADMIN";
-    private final String USER = "USER";
-
     @Getter
     private CompanyRepository companyRepository;
     @Getter
-    private LicenceRepository licenceRepository;
+    private LicenseRepository licenseRepository;
     @Getter
     private OKVEDRepository okvedRepository;
     @Getter
     private CPORepository cpoRepository;
     @Getter
     private BankRepository bankRepository;
-    @Getter
-    private UserRepository userRepository;
 
     @Autowired
-    public EntityManagerService(CompanyRepository companyRepository, LicenceRepository licenceRepository, OKVEDRepository okvedRepository, CPORepository cpoRepository, BankRepository bankRepository, UserRepository userRepository) {
+    public EntityManagerService(CompanyRepository companyRepository, LicenseRepository licenseRepository, OKVEDRepository okvedRepository, CPORepository cpoRepository, BankRepository bankRepository) {
         this.companyRepository = companyRepository;
-        this.licenceRepository = licenceRepository;
+        this.licenseRepository = licenseRepository;
         this.okvedRepository = okvedRepository;
         this.cpoRepository = cpoRepository;
         this.bankRepository = bankRepository;
-        this.userRepository = userRepository;
     }
 
-    public void saveCompany(CompanyDAO company){
-        setCompanyLicenses(company);
+    public void saveCompany(CompanyDAO company){        setCompanyLicenses(company);
         setCompanyOKVED(company);
         setCompanyCPO(company);
         setCompanyBanks(company);
@@ -73,7 +65,7 @@ public class EntityManagerService {
         List<String> licenses = List.of(company.getLicensesString().split(";"));
         Optional<LicenseDAO> licenceDAO;
         for (String license:licenses) {
-            licenceDAO = licenceRepository.findOneByName(license);
+            licenceDAO = licenseRepository.findOneByName(license);
             if(licenceDAO.isPresent()){
                 company
                         .getLicense_list()
@@ -81,7 +73,7 @@ public class EntityManagerService {
             }
             else{
                 LicenseDAO newLicenceDAO = new LicenseDAO(license);
-                licenceRepository.save(newLicenceDAO);
+                licenseRepository.save(newLicenceDAO);
                 company
                         .getLicense_list()
                         .add(newLicenceDAO);

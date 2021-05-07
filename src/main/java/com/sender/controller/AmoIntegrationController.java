@@ -1,57 +1,94 @@
 package com.sender.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.sender.bots.SenderTelegramBot;
-import com.sender.dao.CompanyDAO;
-import com.sender.repository.CompanyRepository;
 import com.sender.service.AmoRequestService;
-import com.sender.service.EntityManagerService;
+import com.sender.service.DatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 public class AmoIntegrationController {
 
-    private final CompanyRepository repository;
     private final AmoRequestService requestService;
-    private final EntityManagerService entityManager;
-    private final SenderTelegramBot bot;
-    private final String STATUS_IN_BASE = "36691654";
-    private final String ADDED_TAG_ID = "83057";
+    private final DatabaseService databaseService;
 
     @Autowired
-    public AmoIntegrationController(CompanyRepository repository, AmoRequestService requestService,EntityManagerService entityManager, SenderTelegramBot bot){
-        this.repository = repository;
+    public AmoIntegrationController(AmoRequestService requestService, DatabaseService databaseService){
         this.requestService = requestService;
-        this.entityManager = entityManager;
-        this.bot = bot;
+        this.databaseService = databaseService;
     }
 
     @PostMapping(value = "/webhook", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseEntity<HttpStatus> getInfoFromWebhook(@RequestParam MultiValueMap params){
-        if(params!=null && params.containsKey("element_id")) {
-            String lead_id = String.valueOf(params.getFirst("element_id"));
-            checkLeadToAddInDatabase(lead_id);
-        /*String webhook = URLDecoder.decode(httpEntity.getBody(), StandardCharsets.UTF_8);
+    public ResponseEntity<HttpStatus> getInfoFromWebhook(HttpEntity<String> httpEntity) {
+        //if(params!=null) {
+        String webhook = URLDecoder.decode(httpEntity.getBody(), StandardCharsets.UTF_8);
         System.out.println(webhook);
-        String regex = "\\[element_id\\]=\\d*";
+        String regex = "\\[id\\]=\\d*";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(webhook);
-        if(matcher.find()){
+        if (matcher.find()) {
             String element_id = matcher.group();
-            String lead_id = element_id.substring(element_id.indexOf("=")+1);*/
+            String lead_id = element_id.substring(element_id.indexOf("=") + 1);
+            databaseService.setLead_id(lead_id);
+            Thread dataSavingThread = new Thread(databaseService);
+            dataSavingThread.start();
             return new ResponseEntity<>(HttpStatus.OK);
         }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        /*}
         else{
+        }*/
+    }
+
+    @GetMapping(value = "/import")
+    public ResponseEntity<HttpStatus> importDeals(){
+        try {
+            /*JSONObject leadsObject = requestService.getAllCompaniesPage1();
+            JSONArray leads = leadsObject.getJSONObject("_embedded").getJSONArray("leads");
+            JSONObject lead;
+            databaseService.setImportMode(true);
+            for(Object leadObject:leads){
+                lead = (JSONObject) leadObject;
+                databaseService.setLead_id(lead.getString("id"));
+                Thread dataSavingThread = new Thread(databaseService);
+                dataSavingThread.start();
+                try {
+                    Thread.sleep(1000);
+                }
+                catch (Exception ex){
+                    ex.printStackTrace();
+                }
+            }
+            leadsObject = requestService.getAllCompaniesPage2();
+            leads = leadsObject.getJSONObject("_embedded").getJSONArray("leads");
+            for(Object leadObject:leads){
+                lead = (JSONObject) leadObject;
+                databaseService.setLead_id(lead.getString("id"));
+                Thread dataSavingThread = new Thread(databaseService);
+                dataSavingThread.start();
+                try {
+                    Thread.sleep(1000);
+                }
+                catch (Exception ex){
+                    ex.printStackTrace();
+                }
+            }
+            databaseService.setImportMode(false);*/
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        catch (Exception ex){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -69,50 +106,6 @@ public class AmoIntegrationController {
         }
     }
 
-    private void checkLeadToAddInDatabase(String lead_id){
-        JSONObject lead = requestService.getCompanyInfo(lead_id);
-        JSONObject lead_embedded = lead.getJSONObject("_embedded");
-        boolean has_status_in_base = lead.getString("status_id").equalsIgnoreCase(STATUS_IN_BASE);
-        JSONArray tags = lead_embedded.getJSONArray("tags");
-        JSONObject tag;
-        boolean has_added_tag = false;
-        for(int i = 0; i<tags.size(); i++){
-            tag = (JSONObject) tags.get(i);
-            has_added_tag = tag.getString("id").equalsIgnoreCase(ADDED_TAG_ID);
-        }
-        if(has_status_in_base && has_added_tag){
-            String contact_id = getContactId(lead_embedded.getJSONArray("contacts"));
-            if(!contact_id.isBlank()){
-                JSONObject contact = requestService.getContactInfo(contact_id);
-                CompanyDAO company = new CompanyDAO(contact);
-                company.setBudget(lead.getString("price"));
-                company.setTags(lead_embedded.getJSONArray("tags"));
-                company.setNotes(requestService.getNotesInfo(lead_id));
-                entityManager.saveCompany(company);
-                bot.sendLeadInfo(company);
-            }
-        }
-    }
 
-
-    private String getContactId(JSONArray contacts){
-        String contactURI = "";
-        String contactId = "";
-        for (Object contact:contacts) {
-            JSONObject contactJSON = (JSONObject) contact;
-            if(contactJSON.getBooleanValue("is_main")){
-                contactURI = contactJSON
-                        .getJSONObject("_links")
-                        .getJSONObject("self")
-                        .getString("href");
-                break;
-            }
-        }
-        int last_slash = contactURI.lastIndexOf("/");
-        if(last_slash>0){
-            contactId = contactURI.substring(last_slash+1);
-        }
-        return contactId;
-    }
 
 }

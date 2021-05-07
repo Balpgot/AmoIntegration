@@ -7,13 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DemoApplication {
 
     public static void main(String[] args) {
+        if(!PropertiesStorage.isLoaded) {
+            PropertiesStorage.loadProperties();
+        }
         SpringApplication.run(DemoApplication.class, args);
-        /*
-            TODO
-                Города - в отдельную базу
-                Подумать что делать с банками
-                TG бот
-         */
     }
 
 }

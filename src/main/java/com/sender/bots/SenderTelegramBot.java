@@ -1,38 +1,54 @@
 package com.sender.bots;
 
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.request.SendPhoto;
+import com.sender.PropertiesStorage;
 import com.sender.dao.CompanyDAO;
 import org.springframework.stereotype.Service;
+
+import java.io.File;
 
 @Service
 public class SenderTelegramBot {
 
     private TelegramBot bot;
+    private final long chatId = PropertiesStorage.TELEGRAM_CHAT_ID;
+    private final long groupId = PropertiesStorage.TELEGRAM_GROUP_ID;
 
     public SenderTelegramBot() {
-        bot = new TelegramBot("");
+        bot = new TelegramBot(PropertiesStorage.TELEGRAM_BOT_TOKEN);
     }
 
     public void sendLeadInfo(CompanyDAO company){
-        String messageText = createMessage(company);
-        SendMessage message = new SendMessage(-1001291799463L, messageText);
-        bot.execute(message);
+        SendPhoto chatMessagePhoto = new SendPhoto(chatId, new File("picture.jpg"));
+        chatMessagePhoto.caption(createMessage(company));
+        bot.execute(chatMessagePhoto);
+        SendPhoto groupMessagePhoto = new SendPhoto(groupId, new File("picture.jpg"));
+        groupMessagePhoto.caption(createMessage(company));
+        bot.execute(groupMessagePhoto);
     }
 
     private String createMessage(CompanyDAO company){
+        String registrationYear = String.valueOf(company.getRegistrationYear());
+        if(registrationYear.equalsIgnoreCase("-1")){
+            registrationYear = "";
+        }
         StringBuilder message = new StringBuilder();
         message.append("Продам ").append(company.getForm()).append("/фирму\n");
         message.append("Город: ").append(company.getCity()).append("\n");
         message.append("СНО: ").append(company.getSno()).append("\n");
-        message.append("Год регистрации: ").append(company.getRegistrationYear()).append("\n");
+        message.append("Год регистрации: ").append(registrationYear).append("\n");
         message.append("Счета в банках: ").append(company.getBankAccounts()).append("\n");
         message.append("Обороты: ").append(company.getOborot()).append("\n");
-        message.append("Отчетость: ").append(company.getReport()).append("\n");
+        message.append("Адрес: ").append(company.getAddress()).append("\n");
+        message.append("Адрес можно оставить: ").append(company.getKeepAddress()).append("\n");
+        message.append("ОКВЭД: ").append(company.getOkvedString()).append("\n");
+        message.append("Отчетность: ").append(company.getReport()).append("\n");
         message.append("Наличие ЭЦП: ").append(company.getEcp()).append("\n");
         message.append("СРО: ").append(company.getCpo()).append("\n");
         message.append("Лицензии: ").append(company.getLicensesString()).append("\n");
         message.append("Госконтракты: ").append(company.getGoszakaz()).append("\n");
+        message.append("Учредителей: ").append(company.getFounders()).append("\n");
         message.append("Комментарии: ").append(company.getComment()).append("\n");
         message.append("Цена: ").append(company.getBudget()).append("\n");
         message.append("ID: ").append(company.getId()).append("\n");

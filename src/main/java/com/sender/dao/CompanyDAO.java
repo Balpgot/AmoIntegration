@@ -34,6 +34,7 @@ public class CompanyDAO {
     private Integer registrationYear = -1;
     private String bankAccounts  = "";
     private String oborot  = "";
+    private String registration = "";
     private String address  = "";
     private String keepAddress  = "";
     private String addressNote  = "";
@@ -45,7 +46,7 @@ public class CompanyDAO {
     private String cpo  = "";
     private String goszakaz  = "";
     private Integer founders = -1;
-    private Integer workersCount;
+    private Integer workersCount = -1;
     private String elimination  = "";
     private Integer price = -1;
     private String debt  = "";
@@ -54,7 +55,12 @@ public class CompanyDAO {
     private String aim  = "";
     private String comment  = "";
     private String post  = "";
+    @Column(columnDefinition="text")
     private String notesString = "";
+    private Boolean voronka = false;
+    private String voronkaId = "";
+    private Boolean isDeleted = false;
+    private Boolean isPosted = false;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -84,18 +90,6 @@ public class CompanyDAO {
             inverseJoinColumns = @JoinColumn(name = "bank_id"))
     private List<BankDAO> bank_list = new ArrayList<>();
 
-    public CompanyDAO(Long id, String mobile, String email, String form, String companyName, String inn, String city, LicenseDAO license, BankDAO bank) {
-        this.id = id;
-        this.mobile = mobile;
-        this.email = email;
-        this.form = form;
-        this.companyName = companyName;
-        this.inn = inn;
-        this.city = city;
-        this.bank_list.add(bank);
-        this.license_list.add(license);
-    }
-
     public CompanyDAO(JSONObject company){
         try {
             this.id = company.getLong("id");
@@ -117,7 +111,12 @@ public class CompanyDAO {
                         this.form = value;
                         break;
                     case "Название":
-                        this.companyName = value;
+                        if(value.startsWith("\"")){
+                            this.companyName = value.substring(1,value.length()-1);
+                        }
+                        else{
+                            this.companyName = value;
+                        }
                         break;
                     case "ИНН":
                         this.inn = value;
@@ -157,6 +156,9 @@ public class CompanyDAO {
                         break;
                     case "Отчетность":
                         this.report = value;
+                        break;
+                    case "Оформление":
+                        this.registration = value;
                         break;
                     case "Сотрудников":
                         this.workersCount = Integer.parseInt(value);
@@ -251,9 +253,18 @@ public class CompanyDAO {
     }
 
     public List<String> getCompanyAsListOfParametersClientFull() {
+        String budget = this.budget;
+        if(budget.equalsIgnoreCase("-1")){
+            budget = "";
+        }
+        String founders = String.valueOf(this.founders);
+        if(founders.equalsIgnoreCase("-1")){
+            founders = "";
+        }
         return List.of(
                 String.valueOf(id),
                 inn,
+                companyName,
                 budget,
                 city,
                 sno,
@@ -272,20 +283,32 @@ public class CompanyDAO {
                 goszakaz,
                 elimination,
                 debt,
-                String.valueOf(founders),
-                owner,
+                founders,
+                String.valueOf(workersCount),
                 comment
         );
     }
 
 
     public List<String> getCompanyAsListOfParametersClient() {
+        String budget = this.budget;
+        if(budget.equalsIgnoreCase("-1")){
+            budget = "";
+        }
+        String founders = String.valueOf(this.founders);
+        if(founders.equalsIgnoreCase("-1")){
+            founders = "";
+        }
+        String registrationYear = String.valueOf(this.registrationYear);
+        if(registrationYear.equalsIgnoreCase("-1")){
+            registrationYear = "";
+        }
         return List.of(
                 String.valueOf(id),
                 budget,
                 city,
                 sno,
-                String.valueOf(registrationYear),
+                registrationYear,
                 bankAccounts,
                 oborot,
                 address,
@@ -300,15 +323,47 @@ public class CompanyDAO {
                 goszakaz,
                 elimination,
                 debt,
-                String.valueOf(founders),
+                founders,
                 owner,
                 comment
         );
     }
 
     public List<String> getCompanyAsListOfParametersAdmin() {
+        String voronkaName = "";
+        switch (this.voronkaId){
+            case ("37851406"):
+                voronkaName = "Платина";
+                break;
+            case ("36691654"):
+                voronkaName = "Золото";
+                break;
+            case ("37851409"):
+                voronkaName = "Серебро";
+                break;
+            case ("37851127"):
+                voronkaName = "Бронза";
+                break;
+        }
+        String budget = this.budget;
+        if(budget.equalsIgnoreCase("-1")){
+            budget = "";
+        }
+        String founders = String.valueOf(this.founders);
+        if(founders.equalsIgnoreCase("-1")){
+            founders = "";
+        }
+        String workersCount = String.valueOf(this.workersCount);
+        if(workersCount.equalsIgnoreCase("-1")){
+            workersCount = "";
+        }
+        String registrationYear = String.valueOf(this.registrationYear);
+        if(registrationYear.equalsIgnoreCase("-1")){
+            registrationYear = "";
+        }
         List<String> parameters = List.of(
                 String.valueOf(id),
+                voronkaName,
                 budget,
                 String.valueOf(price),
                 tags,
@@ -321,7 +376,7 @@ public class CompanyDAO {
                 city,
                 sno,
                 getDateString(),
-                String.valueOf(registrationYear),
+                registrationYear,
                 bankAccounts,
                 oborot,
                 address,
@@ -330,15 +385,16 @@ public class CompanyDAO {
                 nalog,
                 okvedString,
                 report,
+                registration,
                 ecp,
                 cpo,
                 licensesString,
                 goszakaz,
-                String.valueOf(workersCount),
+                workersCount,
                 elimination,
                 debt,
                 marriage,
-                String.valueOf(founders),
+                founders,
                 owner,
                 comment,
                 post

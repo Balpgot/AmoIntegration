@@ -21,7 +21,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication()
-                .withUser("user1").password(passwordEncoder().encode("pass"))
+                .withUser("admin").password(passwordEncoder().encode("43434343"))
                 .authorities("ROLE_ADMIN");
     }
 
@@ -29,7 +29,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers(HttpMethod.POST,"/webhook").permitAll()
-                .antMatchers("/admin/**", "/admin/search/**").authenticated()
+                .antMatchers(HttpMethod.GET,"/reg").permitAll()
+                .antMatchers("/","/admin","/admin/**", "/admin/search/**").authenticated()
                 .antMatchers("/login").permitAll()
                 .and()
                 .csrf().disable()
@@ -38,6 +39,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    return new BCryptPasswordEncoder();
+}
 }

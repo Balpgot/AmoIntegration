@@ -1,6 +1,8 @@
 package com.sender.service;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.sender.PropertiesStorage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -18,26 +20,19 @@ import java.nio.file.StandardOpenOption;
 @Service
 public class AmoRequestService {
 
-    private String refreshToken = "";
-    private String accessToken = "";
-    private String baseURL = "";
-    private String clientId = "";
-    private String clientSecret = "";
-    private String redirectURL = "";
+    private String refreshToken = PropertiesStorage.AMO_REFRESH_TOKEN;
+    private String accessToken = PropertiesStorage.AMO_ACCESS_TOKEN;
+    private String baseURL = PropertiesStorage.AMO_BASE_URL;
+    private String clientId = PropertiesStorage.AMO_CLIENT_ID;
+    private String clientSecret = PropertiesStorage.AMO_CLIENT_SECRET;
+    private String redirectURL = PropertiesStorage.AMO_REDIRECT_URL;
     private File configurationFile = new File("./api.config");
-    //private File configurationFile = new File("C:\\Users\\cinil\\Documents\\GitHub\\AmoIntegration\\api.config");
     private JSONObject configuration;
     private WebClient client;
 
     public AmoRequestService() {
         try {
             this.configuration = JSON.parseObject(Files.readString(this.configurationFile.toPath()));
-            this.accessToken = configuration.getString("accessToken").trim();
-            this.refreshToken = configuration.getString("refreshToken").trim();
-            this.baseURL = configuration.getString("baseURL").trim();
-            this.clientId = configuration.getString("clientId").trim();
-            this.clientSecret = configuration.getString("clientSecret").trim();
-            this.redirectURL = configuration.getString("redirectURL").trim();
             this.client = WebClient
                     .builder()
                     .exchangeStrategies(ExchangeStrategies.builder()
@@ -53,6 +48,8 @@ public class AmoRequestService {
             ex.printStackTrace();
         }
     }
+
+
 
     public JSONObject getContactInfo(String contact_id){
         String response = client
@@ -77,8 +74,40 @@ public class AmoRequestService {
         return JSON.parseObject(response);
     }
 
-    public JSONObject getCompanyInfo(String lead_id){
+    public JSONObject getAllCompaniesPage1() {
         String response;
+        response = client
+                .get()
+                .uri(UriBuilder -> UriBuilder
+                        .path("/api/v4/leads")
+                        .queryParam("with","contacts")
+                        .queryParam("limit",250)
+                        .queryParam("page",1)
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+        return JSON.parseObject(response);
+    }
+
+    public JSONObject getAllCompaniesPage2() {
+        String response;
+        response = client
+                .get()
+                .uri(UriBuilder -> UriBuilder
+                        .path("/api/v4/leads")
+                        .queryParam("with","contacts")
+                        .queryParam("limit",250)
+                        .queryParam("page",2)
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+        return JSON.parseObject(response);
+    }
+
+    public JSONObject getCompanyInfo(String lead_id){
+        String response = "";
         try{
             response = client
                     .get()
@@ -91,22 +120,23 @@ public class AmoRequestService {
                     .block();
         }
         catch (Exception exception){
-            exception.printStackTrace();
             WebClientResponseException ex = (WebClientResponseException) exception;
             HttpStatus status = ex.getStatusCode();
             if(status.value()==401){
                 refreshTokens();
+                response = client
+                        .get()
+                        .uri(UriBuilder -> UriBuilder
+                                .path("/api/v4/leads/"+lead_id)
+                                .queryParam("with","contacts")
+                                .build())
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .block();
             }
-            response = client
-                    .get()
-                    .uri(UriBuilder -> UriBuilder
-                            .path("/api/v4/leads/"+lead_id)
-                            .queryParam("with","contacts")
-                            .build())
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-
+            else{
+                exception.printStackTrace();
+            }
         }
         return JSON.parseObject(response);
     }
@@ -160,6 +190,7 @@ public class AmoRequestService {
                 Files.writeString(configurationFile.toPath(),configuration.toJSONString(),StandardOpenOption.WRITE);
                 Files.writeString(accessTokenFile.toPath(),accessToken, StandardOpenOption.WRITE);
                 Files.writeString(refreshTokenFile.toPath(),refreshToken, StandardOpenOption.WRITE);
+                PropertiesStorage.writeProperties(accessToken,refreshToken);
             }
             else{
                 System.out.println("Failed to access files");
@@ -170,19 +201,7 @@ public class AmoRequestService {
         }
     }
 
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
-    }
-
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
     }
 }
