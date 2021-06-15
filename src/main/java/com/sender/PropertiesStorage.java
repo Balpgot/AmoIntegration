@@ -22,12 +22,14 @@ public class PropertiesStorage {
     public static Integer VK_GROUP_ID;
     public static Integer VK_CLIENT_ID;
     public static String VK_PHOTO_ID;
+    public static String SECURITY_LOGIN;
+    public static String SECURITY_PASSWORD;
     public static boolean isLoaded = false;
 
-    public static void loadProperties(){
+    public static void loadProperties() {
         try {
             properties = new Properties();
-            properties.load(new FileInputStream("./api.properties"));
+            properties.load(new FileInputStream("./config/api.properties"));
             AMO_ACCESS_TOKEN = properties.getProperty("amo.accessToken");
             //System.out.println(AMO_ACCESS_TOKEN);
             AMO_REFRESH_TOKEN = properties.getProperty("amo.refreshToken");
@@ -57,22 +59,22 @@ public class PropertiesStorage {
             VK_CLIENT_ID = Integer.parseInt(properties.getProperty("vk.clientId"));
             //System.out.println(VK_CLIENT_ID);
             VK_PHOTO_ID = properties.getProperty("vk.photoId");
+            SECURITY_LOGIN = properties.getProperty("security.login");
+            SECURITY_PASSWORD = properties.getProperty("security.password");
             isLoaded = true;
-        }
-        catch (IOException ex){
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    public static void writeProperties(String accessToken, String refreshToken){
+    public static void writeProperties(String accessToken, String refreshToken) {
         try {
             properties.setProperty("amo.accessToken", accessToken);
             AMO_ACCESS_TOKEN = accessToken;
             properties.setProperty("amo.refreshToken", refreshToken);
             AMO_REFRESH_TOKEN = refreshToken;
-            properties.store(new FileOutputStream("./api.properties"), null);
-        }
-        catch (IOException ex){
+            properties.store(new FileOutputStream("./config/api.properties"), null);
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }

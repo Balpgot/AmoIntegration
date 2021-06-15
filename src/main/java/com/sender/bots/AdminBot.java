@@ -13,10 +13,10 @@ public class AdminBot {
 
     public AdminBot() {
         bot = new TelegramBot(PropertiesStorage.TELEGRAM_ADMINBOT_TOKEN);
-}
+    }
 
-    public void sendInfo(String text){
-        SendMessage message = new SendMessage(testid,text);
+    public void sendInfo(String text) {
+        SendMessage message = new SendMessage(testid, text);
         bot.execute(message);
     }
 

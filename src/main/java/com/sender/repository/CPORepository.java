@@ -11,7 +11,7 @@ public interface CPORepository extends JpaRepository<CPODAO, Long> {
     Optional<CPODAO> findCPODAOByName(String name);
 
     @Query("select distinct cpo.id from CPODAO cpo where cpo.name in ?1")
-    List<Long> getCpoIds(String [] names);
+    List<Long> getCpoIds(String[] names);
 
     @Query("select distinct cpo.name from CPODAO cpo where not cpo.name='Нет' and not cpo.name='' order by cpo.name asc")
     List<String> getAllCpoNames();

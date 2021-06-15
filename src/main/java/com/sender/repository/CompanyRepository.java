@@ -34,23 +34,4 @@ public interface CompanyRepository extends JpaRepository<CompanyDAO, Long> {
 
     Optional<CompanyDAO> findCompanyDAOByEmailStartsWithIgnoreCase(String email);
 
-    List<CompanyDAO> findAllByCityStartsWithAndFormStartsWithAndSnoStartsWithAndBankAccountsContainsIgnoreCaseAndAddressNoteStartsWithAndOborotStartsWithAndCpoContainsIgnoreCaseAndLicensesStringContainsAndGoszakazStartsWithAndVoronkaTrueAndIsDeletedFalse(String city, String form, String sno, String bankAccounts, String address, String oborot, String cpo, String license, String goszakaz);
-
-    List<CompanyDAO> findAllByCityStartsWithAndFormStartsWithAndSnoStartsWithAndBankAccountsContainsIgnoreCaseAndAddressNoteStartsWithAndOborotStartsWithAndCpoContainsIgnoreCaseAndLicensesStringContainsAndGoszakazStartsWithAndIsDeletedFalse(String city, String form, String sno, String bankAccounts, String address, String oborot, String cpo, String license, String goszakaz);
-
-    List<CompanyDAO> findAllByCityAndFormAndSnoAndBankAccountsContainsAndKeepAddressAndOborotAndCpoContainsAndLicensesStringContainsAndGoszakaz(String city, String form, String sno, String bankAccounts, String address, String oborot, String cpo, String license, String goszakaz);
-
-    List<CompanyDAO> findAllByCityAndFormAndSnoAndBankAccountsContainsAndKeepAddressAndOborotAndCpoContainsAndLicensesStringContainsAndGoszakazAndWorkersCountEquals(String city, String form, String sno, String bankAccounts, String address, String oborot, String cpo, String license, String goszakaz, int workersCount);
-
-    List<CompanyDAO> findAllByCityAndFormAndSnoAndBankAccountsContainsAndKeepAddressAndOborotAndCpoContainsAndLicensesStringContainsAndGoszakazAndWorkersCountGreaterThanEqual(String city, String form, String sno, String bankAccounts, String address, String oborot, String cpo, String license, String goszakaz, int workersCount);
-
-    List<CompanyDAO> findAllByCityAndFormAndSnoAndBankAccountsContainsAndKeepAddressAndOborotAndCpoContainsAndLicensesStringContainsAndGoszakazAndRegistrationYearLessThanEqual(String city, String form, String sno, String bankAccounts, String address, String oborot, String cpo, String license, String goszakaz, int year);
-
-    List<CompanyDAO> findAllByCityAndFormAndSnoAndBankAccountsContainsAndKeepAddressAndOborotAndCpoContainsAndLicensesStringContainsAndGoszakazAndWorkersCountEqualsAndRegistrationYearLessThanEqual(String city, String form, String sno, String bankAccounts, String address, String oborot, String cpo, String license, String goszakaz, int workersCount, int registrationYear);
-
-    List<CompanyDAO> findAllByCityAndFormAndSnoAndBankAccountsContainsAndKeepAddressAndOborotAndCpoContainsAndLicensesStringContainsAndGoszakazAndWorkersCountGreaterThanEqualAndRegistrationYearLessThanEqual(String city, String form, String sno, String bankAccounts, String address, String oborot, String cpo, String license, String goszakaz, int workersCount, int registrationYear);
-
-
-
-
 }

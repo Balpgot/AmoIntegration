@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DemoApplication {
 
     public static void main(String[] args) {
-        if(!PropertiesStorage.isLoaded) {
+        if (!PropertiesStorage.isLoaded) {
             PropertiesStorage.loadProperties();
         }
         SpringApplication.run(DemoApplication.class, args);

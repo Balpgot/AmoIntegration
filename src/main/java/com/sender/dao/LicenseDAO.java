@@ -11,13 +11,13 @@ import javax.persistence.*;
 @Table(name = "license")
 @AllArgsConstructor
 @NoArgsConstructor
-public class LicenseDAO{
+public class LicenseDAO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
 
-    public LicenseDAO(String name){
+    public LicenseDAO(String name) {
         this.name = name;
     }
 }

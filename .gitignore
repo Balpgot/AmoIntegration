@@ -1,3 +1,10 @@
 /api.config
 /api.properties
 /templates.rar
+/run.sh
+/target
+/amodb.dump
+/src/main/resources/templates/index.html
+/src/main/resources/templates/templates.rar
+/src/main/resources/templates/
+/src/main/resources/static/js/index.js

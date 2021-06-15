@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" name="Log4jTest" packages="">
+    <Properties>
+        <Property name="filename">test.log</Property>
+        <Property name="logEncoding" value="UTF-8"/>
+        <Property name="logDirectory" value="logs"/>
+    </Properties>
+
+    <Appenders>
+        <Console name="STDOUT">
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+
+        <RollingFile
+                name="File" fileName="./logs/bizbro-${date:dd-MM-yyyy}.log"
+                filePattern="logs/bizbro-%d{dd-MM-yyyy}-%i.log"
+                ignoreExceptions="false">
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
+            <TimeBasedTriggeringPolicy />
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="STDOUT" />
+            <AppenderRef ref="File" />
+        </Root>
+    </Loggers>
+</Configuration>

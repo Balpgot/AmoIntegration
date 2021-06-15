@@ -14,5 +14,5 @@ public interface LicenseRepository extends JpaRepository<LicenseDAO, Long> {
     List<String> getAllLicense();
 
     @Query("select distinct license.id from LicenseDAO license where license.name in ?1")
-    List<Long> getLicenseIds(String [] names);
+    List<Long> getLicenseIds(String[] names);
 }

@@ -32,30 +32,30 @@ public class CompanyDAO {
     private String sno = "";
     private String registrationDate = "";
     private Integer registrationYear = -1;
-    private String bankAccounts  = "";
-    private String oborot  = "";
+    private String bankAccounts = "";
+    private String oborot = "";
     private String registration = "";
-    private String address  = "";
-    private String keepAddress  = "";
-    private String addressNote  = "";
-    private String nalog  = "";
-    private String licensesString  = "";
-    private String okvedString  = "";
-    private String report  = "";
-    private String ecp  = "";
-    private String cpo  = "";
-    private String goszakaz  = "";
+    private String address = "";
+    private String keepAddress = "";
+    private String addressNote = "";
+    private String nalog = "";
+    private String licensesString = "";
+    private String okvedString = "";
+    private String report = "";
+    private String ecp = "";
+    private String cpo = "";
+    private String goszakaz = "";
     private Integer founders = -1;
     private Integer workersCount = -1;
-    private String elimination  = "";
+    private String elimination = "";
     private Integer price = -1;
-    private String debt  = "";
-    private String marriage  = "";
-    private String owner  = "";
-    private String aim  = "";
-    private String comment  = "";
-    private String post  = "";
-    @Column(columnDefinition="text")
+    private String debt = "";
+    private String marriage = "";
+    private String owner = "";
+    private String aim = "";
+    private String comment = "";
+    private String post = "";
+    @Column(columnDefinition = "text")
     private String notesString = "";
     private Boolean voronka = false;
     private String voronkaId = "";
@@ -90,7 +90,7 @@ public class CompanyDAO {
             inverseJoinColumns = @JoinColumn(name = "bank_id"))
     private List<BankDAO> bank_list = new ArrayList<>();
 
-    public CompanyDAO(JSONObject company){
+    public CompanyDAO(JSONObject company) {
         try {
             this.id = company.getLong("id");
             this.name = company.getString("name");
@@ -111,10 +111,9 @@ public class CompanyDAO {
                         this.form = value;
                         break;
                     case "Название":
-                        if(value.startsWith("\"")){
-                            this.companyName = value.substring(1,value.length()-1);
-                        }
-                        else{
+                        if (value.startsWith("\"")) {
+                            this.companyName = value.substring(1, value.length() - 1);
+                        } else {
                             this.companyName = value;
                         }
                         break;
@@ -204,25 +203,24 @@ public class CompanyDAO {
                         break;
                 }
             }
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
             System.out.println(company);
         }
     }
 
-    public void setTags(JSONArray tagsArray){
+    public void setTags(JSONArray tagsArray) {
         String tags = "";
-        for (Object tag:tagsArray) {
+        for (Object tag : tagsArray) {
             JSONObject tagJSON = (JSONObject) tag;
             tags = tags.concat(tagJSON.getString("name")).concat(";");
         }
         this.tags = tags;
     }
 
-    private String setMultiSelectValue(JSONArray valueArray){
+    private String setMultiSelectValue(JSONArray valueArray) {
         StringBuilder resultString = new StringBuilder();
-        for (Object valueObject: valueArray) {
+        for (Object valueObject : valueArray) {
             JSONObject valueJSON = (JSONObject) valueObject;
             resultString.append(valueJSON.getString("value"));
             resultString.append(";");
@@ -231,19 +229,19 @@ public class CompanyDAO {
         return resultString.toString().trim();
     }
 
-    private String getDateString(){
+    private String getDateString() {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(Long.parseLong(registrationDate)*1000);
+        calendar.setTimeInMillis(Long.parseLong(registrationDate) * 1000);
         StringBuilder dateString = new StringBuilder();
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-        int month = calendar.get(Calendar.MONTH)+1;
+        int month = calendar.get(Calendar.MONTH) + 1;
         int year = calendar.get(Calendar.YEAR);
-        if(day<10){
+        if (day < 10) {
             dateString.append(0);
         }
         dateString.append(day);
         dateString.append(".");
-        if(month<10){
+        if (month < 10) {
             dateString.append(0);
         }
         dateString.append(month);
@@ -254,11 +252,11 @@ public class CompanyDAO {
 
     public List<String> getCompanyAsListOfParametersClientFull() {
         String budget = this.budget;
-        if(budget.equalsIgnoreCase("-1")){
+        if (budget.equalsIgnoreCase("-1")) {
             budget = "";
         }
         String founders = String.valueOf(this.founders);
-        if(founders.equalsIgnoreCase("-1")){
+        if (founders.equalsIgnoreCase("-1")) {
             founders = "";
         }
         return List.of(
@@ -292,15 +290,15 @@ public class CompanyDAO {
 
     public List<String> getCompanyAsListOfParametersClient() {
         String budget = this.budget;
-        if(budget.equalsIgnoreCase("-1")){
+        if (budget.equalsIgnoreCase("-1")) {
             budget = "";
         }
         String founders = String.valueOf(this.founders);
-        if(founders.equalsIgnoreCase("-1")){
+        if (founders.equalsIgnoreCase("-1")) {
             founders = "";
         }
         String registrationYear = String.valueOf(this.registrationYear);
-        if(registrationYear.equalsIgnoreCase("-1")){
+        if (registrationYear.equalsIgnoreCase("-1")) {
             registrationYear = "";
         }
         return List.of(
@@ -331,7 +329,7 @@ public class CompanyDAO {
 
     public List<String> getCompanyAsListOfParametersAdmin() {
         String voronkaName = "";
-        switch (this.voronkaId){
+        switch (this.voronkaId) {
             case ("37851406"):
                 voronkaName = "Платина";
                 break;
@@ -346,22 +344,22 @@ public class CompanyDAO {
                 break;
         }
         String budget = this.budget;
-        if(budget.equalsIgnoreCase("-1")){
+        if (budget.equalsIgnoreCase("-1")) {
             budget = "";
         }
         String founders = String.valueOf(this.founders);
-        if(founders.equalsIgnoreCase("-1")){
+        if (founders.equalsIgnoreCase("-1")) {
             founders = "";
         }
         String workersCount = String.valueOf(this.workersCount);
-        if(workersCount.equalsIgnoreCase("-1")){
+        if (workersCount.equalsIgnoreCase("-1")) {
             workersCount = "";
         }
         String registrationYear = String.valueOf(this.registrationYear);
-        if(registrationYear.equalsIgnoreCase("-1")){
+        if (registrationYear.equalsIgnoreCase("-1")) {
             registrationYear = "";
         }
-        List<String> parameters = List.of(
+        return List.of(
                 String.valueOf(id),
                 voronkaName,
                 budget,
@@ -399,15 +397,14 @@ public class CompanyDAO {
                 comment,
                 post
         );
-        return parameters;
     }
 
     public void setBudget(String budget) {
         this.budget = budget;
     }
 
-    public void setNotes(JSONObject notes){
-        if(notes!=null) {
+    public void setNotes(JSONObject notes) {
+        if (notes != null) {
             JSONArray notesArray = ((JSONObject) notes.get("_embedded")).getJSONArray("notes");
             JSONObject note;
             StringBuilder builder = new StringBuilder();
@@ -421,7 +418,7 @@ public class CompanyDAO {
         }
     }
 
-    public List<String> getNotesAsList(){
+    public List<String> getNotesAsList() {
         return List.of(
                 notesString.split(";")
         );

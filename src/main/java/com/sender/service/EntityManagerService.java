@@ -34,24 +34,24 @@ public class EntityManagerService {
         this.bankRepository = bankRepository;
     }
 
-    public void saveCompany(CompanyDAO company){        setCompanyLicenses(company);
+    public void saveCompany(CompanyDAO company) {
+        setCompanyLicenses(company);
         setCompanyOKVED(company);
         setCompanyCPO(company);
         setCompanyBanks(company);
         companyRepository.save(company);
     }
 
-    private void setCompanyCPO(CompanyDAO company){
+    private void setCompanyCPO(CompanyDAO company) {
         List<String> CPOs = List.of(company.getCpo().split(";"));
         Optional<CPODAO> cpoDAO;
-        for(String CPO:CPOs){
+        for (String CPO : CPOs) {
             cpoDAO = cpoRepository.findCPODAOByName(CPO);
-            if(cpoDAO.isPresent()){
+            if (cpoDAO.isPresent()) {
                 company
                         .getCpo_list()
                         .add(cpoDAO.get());
-            }
-            else{
+            } else {
                 CPODAO newCpoDAO = new CPODAO(CPO);
                 cpoRepository.save(newCpoDAO);
                 company
@@ -61,17 +61,16 @@ public class EntityManagerService {
         }
     }
 
-    private void setCompanyLicenses(CompanyDAO company){
+    private void setCompanyLicenses(CompanyDAO company) {
         List<String> licenses = List.of(company.getLicensesString().split(";"));
         Optional<LicenseDAO> licenceDAO;
-        for (String license:licenses) {
+        for (String license : licenses) {
             licenceDAO = licenseRepository.findOneByName(license);
-            if(licenceDAO.isPresent()){
+            if (licenceDAO.isPresent()) {
                 company
                         .getLicense_list()
                         .add(licenceDAO.get());
-            }
-            else{
+            } else {
                 LicenseDAO newLicenceDAO = new LicenseDAO(license);
                 licenseRepository.save(newLicenceDAO);
                 company
@@ -81,17 +80,17 @@ public class EntityManagerService {
         }
     }
 
-    private void setCompanyOKVED(CompanyDAO company){
+    private void setCompanyOKVED(CompanyDAO company) {
         String okvedString = company.getOkvedString();
         String okvedIdRegex = "\\d{2}\\.\\d{2}(\\.\\d{2})?";
         Pattern okvedIdPattern = Pattern.compile(okvedIdRegex);
         Matcher okvedIdMatcher = okvedIdPattern.matcher(okvedString);
         String okvedId = "";
         Optional<OKVEDDAO> okved;
-        if(okvedIdMatcher.find()){
+        if (okvedIdMatcher.find()) {
             okvedId = okvedIdMatcher.group();
             okved = okvedRepository.findById(okvedId);
-            if(okved.isPresent()){
+            if (okved.isPresent()) {
                 company
                         .getOkved_list()
                         .add(okved.get());
@@ -100,10 +99,10 @@ public class EntityManagerService {
         String okvedNameRegex = "([А-Яа-я]\\s?)*";
         Pattern okvedNamePattern = Pattern.compile(okvedNameRegex);
         Matcher okvedNameMatcher = okvedNamePattern.matcher(okvedString);
-        String okvedName = "";
-        if(okvedNameMatcher.find()){
+        String okvedName;
+        if (okvedNameMatcher.find()) {
             okvedName = okvedNameMatcher.group();
-            OKVEDDAO newOkvedDAO = new OKVEDDAO(okvedId,okvedName);
+            OKVEDDAO newOkvedDAO = new OKVEDDAO(okvedId, okvedName);
             okvedRepository.save(newOkvedDAO);
             company
                     .getOkved_list()
@@ -111,17 +110,16 @@ public class EntityManagerService {
         }
     }
 
-    private void setCompanyBanks(CompanyDAO company){
+    private void setCompanyBanks(CompanyDAO company) {
         List<String> banks = List.of(company.getBankAccounts().split(";"));
         Optional<BankDAO> bankDAO;
-        for (String bankName:banks) {
+        for (String bankName : banks) {
             bankDAO = bankRepository.findOneByName(bankName);
-            if(bankDAO.isPresent()){
+            if (bankDAO.isPresent()) {
                 company
                         .getBank_list()
                         .add(bankDAO.get());
-            }
-            else{
+            } else {
                 BankDAO newBankDAO = new BankDAO(bankName);
                 bankRepository.save(newBankDAO);
                 company

@@ -6,7 +6,8 @@ import com.sender.bots.AdminBot;
 import com.sender.bots.SenderTelegramBot;
 import com.sender.bots.VkBot;
 import com.sender.dao.CompanyDAO;
-import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -14,6 +15,7 @@ import java.util.Optional;
 @Service
 public class DatabaseService implements Runnable {
 
+    private final Logger log;
     private final AmoRequestService requestService;
     private final EntityManagerService entityManager;
     private final SenderTelegramBot bot;
@@ -23,11 +25,9 @@ public class DatabaseService implements Runnable {
     private final String STATUS_GOLD = "36691654";
     private final String STATUS_SILVER = "37851409";
     private final String STATUS_BRONZE = "37851127";
-    private final String ADDED_TAG_ID = "83057";
+    private final String ADDED_TAG_JSON = "{\"id\": 83057,\"name\": \"Добавлен\"}";
     private String lead_id = "";
     private boolean sendToChats = true;
-    @Setter
-    private boolean importMode = false;
 
     public DatabaseService(AmoRequestService requestService, EntityManagerService entityManager, SenderTelegramBot bot, AdminBot adminBot, VkBot vkBot) {
         this.requestService = requestService;
@@ -35,123 +35,122 @@ public class DatabaseService implements Runnable {
         this.entityManager = entityManager;
         this.bot = bot;
         this.adminBot = adminBot;
+        this.log = LoggerFactory.getLogger(DatabaseService.class);
+    }
+
+    private boolean normalVoronka(String status_id) {
+        return status_id.equalsIgnoreCase(STATUS_PLATINA) ||
+                status_id.equalsIgnoreCase(STATUS_GOLD) ||
+                status_id.equalsIgnoreCase(STATUS_SILVER) ||
+                status_id.equalsIgnoreCase(STATUS_BRONZE);
+    }
+
+    private Optional<CompanyDAO> findCompanyInDatabase(Long companyId) {
+        return entityManager
+                .getCompanyRepository()
+                .findById(companyId);
+    }
+
+    private void makeCompanyDeleted(JSONArray contacts) {
+        Long companyId = Long.parseLong(
+                getContactId(contacts)
+        );
+        Optional<CompanyDAO> companyInDB = findCompanyInDatabase(companyId);
+        if (companyInDB.isPresent()) {
+            CompanyDAO companyInDBObject = companyInDB.get();
+            companyInDBObject.setIsDeleted(true);
+            companyInDBObject.setVoronka(false);
+            companyInDBObject.setIsPosted(false);
+            entityManager.getCompanyRepository().save(companyInDBObject);
+        }
     }
 
     @Override
     public void run() {
-        StringBuilder builder = new StringBuilder(lead_id);
-        builder.append("\n");
+        StringBuilder builder = new StringBuilder(lead_id+"\n");
         builder.append("Отправлять? ").append(sendToChats).append("\n");
-        System.out.println("Saving " + lead_id);
         JSONObject lead = requestService.getCompanyInfo(lead_id);
-        System.out.println(lead);
         JSONObject lead_embedded = lead.getJSONObject("_embedded");
-        boolean voronka = false;
         String status_id = lead.getString("status_id");
-        if(
-                status_id.equalsIgnoreCase(STATUS_PLATINA) ||
-                status_id.equalsIgnoreCase(STATUS_GOLD) ||
-                status_id.equalsIgnoreCase(STATUS_SILVER) ||
-                status_id.equalsIgnoreCase(STATUS_BRONZE)
-        ) {
-            voronka = true;
-            builder.append("Верная воронка").append("\n");
-        }
-        else{
-            Optional<CompanyDAO> companyInDB = entityManager
-                    .getCompanyRepository()
-                    .findById(
-                            Long.parseLong(
-                                    getContactId(
-                                            lead_embedded.getJSONArray("contacts")
-                                    )
-                            )
-                    );
-            if(companyInDB.isPresent()){
-                CompanyDAO companyInDBObject = companyInDB.get();
-                companyInDBObject.setIsDeleted(true);
-                companyInDBObject.setVoronka(false);
-                companyInDBObject.setIsPosted(false);
-                entityManager.getCompanyRepository().save(companyInDBObject);
-            }
-            builder.append("Удалена").append("\n");
-            adminBot.sendInfo(builder.toString());
-        }
+        JSONArray contactsArray = lead_embedded.getJSONArray("contacts");
         JSONArray tags = lead_embedded.getJSONArray("tags");
-        JSONObject tag;
-        boolean has_added_tag = false;
-        for(int i = 0; i<tags.size(); i++){
-            tag = (JSONObject) tags.get(i);
-            has_added_tag = tag.getString("id").equalsIgnoreCase(ADDED_TAG_ID);
-        }
-        if(importMode){
-            has_added_tag = true;
-        }
-        boolean bronze = status_id.equalsIgnoreCase(STATUS_BRONZE);
-        if(voronka){
-            String contact_id = getContactId(lead_embedded.getJSONArray("contacts"));
-            if(!contact_id.isBlank()){
+        if (normalVoronka(status_id)) {
+            builder.append("Верная воронка").append("\n");
+            String contact_id = getContactId(contactsArray);
+            if (!contact_id.isBlank()) {
                 JSONObject contact = requestService.getContactInfo(contact_id);
+                log.info("Contact info: {}", contact.toString());
+                boolean hasAddedTag = tags.contains(ADDED_TAG_JSON);
+                boolean bronzeVoronka = status_id.equalsIgnoreCase(STATUS_BRONZE);
                 CompanyDAO company = new CompanyDAO(contact);
                 company.setBudget(lead.getString("price"));
                 company.setTags(lead_embedded.getJSONArray("tags"));
-                if(!has_added_tag){
-                    company.setIsPosted(false);
-                }
                 company.setNotes(requestService.getNotesInfo(lead_id));
                 company.setIsDeleted(false);
-                if(bronze) {
-                    company.setVoronka(false);
+                company.setVoronkaId(status_id);
+                if (!hasAddedTag) {
+                    company.setIsPosted(false);
                 }
-                else{
+                if (bronzeVoronka) {
+                    company.setVoronka(false);
+                } else {
                     company.setVoronka(true);
                 }
-                company.setVoronkaId(status_id);
-                builder.append("Бронза: ").append(bronze).append("\n");
-                builder.append("Тег: ").append(has_added_tag).append("\n");
-                if(!bronze && has_added_tag) {
-                    if(entityManager.getCompanyRepository().existsById(company.getId())) {
+                builder.append("Бронза: ").append(bronzeVoronka).append("\n");
+                builder.append("Тег: ").append(hasAddedTag).append("\n");
+                if (!bronzeVoronka && hasAddedTag) {
+                    Optional<CompanyDAO> companyInDBOptional = entityManager.getCompanyRepository().findById(company.getId());
+                    if (companyInDBOptional.isPresent()) {
                         builder.append("Уже в базе").append("\n");
-                        CompanyDAO companyInDB = entityManager.getCompanyRepository().findById(company.getId()).get();
+                        CompanyDAO companyInDB = companyInDBOptional.get();
                         if (companyInDB.getIsPosted()) {
-                            sendToChats = false;
+                            this.sendToChats = false;
                             builder.append("Уже был пост").append("\n");
-                        }
-                        else{
-                            sendToChats = true;
+                        } else {
+                            this.sendToChats = true;
                             builder.append("Поста не было").append("\n");
                         }
-                        if (!companyInDB.getTags().contains("Добавлен")) {
+                        boolean alreadyHadTag = companyInDB.getTags().contains("Добавлен");
+                        if (!alreadyHadTag) {
                             this.sendToChats = true;
                             builder.append("Появился тег добавлен").append("\n");
                         } else {
                             this.sendToChats = false;
                             builder.append("Тег добавлен уже был").append("\n");
                         }
-                    }
-                    else{
-                        sendToChats = true;
+                        log.info("Company {} was in DB. Post: {}. Tag: {}", companyInDB.getId(), companyInDB.getIsPosted(), alreadyHadTag);
+                    } else {
+                        this.sendToChats = true;
                         builder.append("В базе нет, новая сделка").append("\n");
+                        this.log.info("Company {} is new.", company.getId());
                     }
-                    if(sendToChats) {
-                        bot.sendLeadInfo(company);
-                        vkBot.sendPost(company);
+                    if (this.sendToChats) {
+                        this.bot.sendLeadInfo(company);
+                        this.vkBot.sendPost(company);
                         company.setIsPosted(true);
                         builder.append("Сделка запощена, статус обновлен").append("\n");
+                        this.log.info("Posted lead {}", company.getId());
                     }
                 }
-                entityManager.saveCompany(company);
-                adminBot.sendInfo(builder.toString());
+                this.entityManager.saveCompany(company);
+                this.log.info("Lead {} saved to DB", lead_id);
+                this.adminBot.sendInfo(builder.toString());
             }
+        }
+        else {
+            makeCompanyDeleted(contactsArray);
+            builder.append("Удалена").append("\n");
+            this.adminBot.sendInfo(builder.toString());
+            this.log.info("Lead {} is deleted", lead_id);
         }
     }
 
-    private String getContactId(JSONArray contacts){
+    private String getContactId(JSONArray contacts) {
         String contactURI = "";
         String contactId = "";
-        for (Object contact:contacts) {
+        for (Object contact : contacts) {
             JSONObject contactJSON = (JSONObject) contact;
-            if(contactJSON.getBooleanValue("is_main")){
+            if (contactJSON.getBooleanValue("is_main")) {
                 contactURI = contactJSON
                         .getJSONObject("_links")
                         .getJSONObject("self")
@@ -160,8 +159,8 @@ public class DatabaseService implements Runnable {
             }
         }
         int last_slash = contactURI.lastIndexOf("/");
-        if(last_slash>0){
-            contactId = contactURI.substring(last_slash+1);
+        if (last_slash > 0) {
+            contactId = contactURI.substring(last_slash + 1);
         }
         return contactId;
     }

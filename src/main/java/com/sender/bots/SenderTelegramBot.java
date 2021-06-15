@@ -19,18 +19,18 @@ public class SenderTelegramBot {
         bot = new TelegramBot(PropertiesStorage.TELEGRAM_BOT_TOKEN);
     }
 
-    public void sendLeadInfo(CompanyDAO company){
-        SendPhoto chatMessagePhoto = new SendPhoto(chatId, new File("picture.jpg"));
+    public void sendLeadInfo(CompanyDAO company) {
+        SendPhoto chatMessagePhoto = new SendPhoto(chatId, new File("./config/picture.jpg"));
         chatMessagePhoto.caption(createMessage(company));
         bot.execute(chatMessagePhoto);
-        SendPhoto groupMessagePhoto = new SendPhoto(groupId, new File("picture.jpg"));
+        SendPhoto groupMessagePhoto = new SendPhoto(groupId, new File("./config/picture.jpg"));
         groupMessagePhoto.caption(createMessage(company));
         bot.execute(groupMessagePhoto);
     }
 
-    private String createMessage(CompanyDAO company){
+    private String createMessage(CompanyDAO company) {
         String registrationYear = String.valueOf(company.getRegistrationYear());
-        if(registrationYear.equalsIgnoreCase("-1")){
+        if (registrationYear.equalsIgnoreCase("-1")) {
             registrationYear = "";
         }
         StringBuilder message = new StringBuilder();

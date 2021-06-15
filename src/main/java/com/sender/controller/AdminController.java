@@ -6,6 +6,8 @@ import com.sender.dao.CompanyDAO;
 import com.sender.service.EntityManagerService;
 import com.sender.service.ExcelService;
 import com.sender.service.SearchService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -21,6 +23,8 @@ import java.util.List;
 @RestController
 @CrossOrigin
 public class AdminController {
+
+    private Logger log;
     private EntityManagerService entityManager;
     private SearchService searchService;
 
@@ -28,6 +32,7 @@ public class AdminController {
     public AdminController(EntityManagerService entityManager, SearchService searchService) {
         this.entityManager = entityManager;
         this.searchService = searchService;
+        this.log = LoggerFactory.getLogger(AdminController.class);
     }
 
     @PostMapping(value = "/admin/search/name", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,8 +56,7 @@ public class AdminController {
             JSONObject response = new JSONObject();
             response.put("name", responseList);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -81,8 +85,7 @@ public class AdminController {
             JSONObject response = new JSONObject();
             response.put("inn", responseList);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -152,10 +155,9 @@ public class AdminController {
             response.put("form", entityManager.getCompanyRepository().getAllForm());
             response.put("bank", entityManager.getBankRepository().getAllBankNames());
             response.put("license", entityManager.getLicenseRepository().getAllLicense());
-            response.put("sro",entityManager.getCpoRepository().getAllCpoNames());
+            response.put("sro", entityManager.getCpoRepository().getAllCpoNames());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -169,6 +171,7 @@ public class AdminController {
             InputStreamResource resource;
             try {
                 List<CompanyDAO> searchResult = searchService.searchCompanies(params);
+                log.info("SEARCH: {} \n FOUND: {}", params, searchResult.size());
                 String admin = String.valueOf(params.getFirst("mode"));
                 file = ExcelService.createExcelFile(searchResult, admin);
                 HttpHeaders headers = new HttpHeaders();
@@ -187,9 +190,9 @@ public class AdminController {
     }
 
     @GetMapping(value = "/reg")
-    public ResponseEntity<HttpStatus> regAll(){
+    public ResponseEntity<HttpStatus> regAll() {
         List<CompanyDAO> companyDAOS = entityManager.getCompanyRepository().findAll();
-        for(CompanyDAO company: companyDAOS){
+        for (CompanyDAO company : companyDAOS) {
             company.setRegistration("");
             entityManager.getCompanyRepository().save(company);
         }

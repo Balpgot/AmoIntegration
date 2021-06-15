@@ -22,13 +22,12 @@ public class VkBot {
     public VkBot() {
         try {
             actorUser = new UserActor(userId, accessToken);
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    public void sendPost(CompanyDAO company){
+    public void sendPost(CompanyDAO company) {
         try {
             vk
                     .wall()
@@ -38,15 +37,14 @@ public class VkBot {
                     .message(createMessage(company))
                     .attachments(photoId)
                     .execute();
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private String createMessage(CompanyDAO company){
+    private String createMessage(CompanyDAO company) {
         String registrationYear = String.valueOf(company.getRegistrationYear());
-        if(registrationYear.equalsIgnoreCase("-1")){
+        if (registrationYear.equalsIgnoreCase("-1")) {
             registrationYear = "";
         }
         StringBuilder message = new StringBuilder();
