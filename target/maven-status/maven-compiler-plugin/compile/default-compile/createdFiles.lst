@@ -2,11 +2,13 @@ com\sender\bots\VkBot.class
 com\sender\repository\CPORepository.class
 com\sender\DemoApplication.class
 com\sender\controller\AdminController.class
+com\sender\bots\DonateTelegramBot.class
 com\sender\dao\CompanyDAO.class
 com\sender\bots\SenderTelegramBot.class
 com\sender\dao\CPODAO.class
 com\sender\service\SearchService.class
 com\sender\repository\LicenseRepository.class
+com\sender\service\WordService.class
 com\sender\dao\LicenseDAO.class
 com\sender\repository\CompanyRepository.class
 com\sender\view\AdminViewController.class

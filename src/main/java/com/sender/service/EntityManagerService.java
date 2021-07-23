@@ -61,6 +61,18 @@ public class EntityManagerService {
         }
     }
 
+    public CPODAO getCPODAObyName(String cpoName){
+        Optional<CPODAO> cpoDAO = cpoRepository.findCPODAOByName(cpoName);
+        if(cpoDAO.isPresent()){
+            return cpoDAO.get();
+        }
+        else {
+            CPODAO newCPODAO = new CPODAO(cpoName);
+            this.cpoRepository.save(newCPODAO);
+            return newCPODAO;
+        }
+    }
+
     private void setCompanyLicenses(CompanyDAO company) {
         List<String> licenses = List.of(company.getLicensesString().split(";"));
         Optional<LicenseDAO> licenceDAO;

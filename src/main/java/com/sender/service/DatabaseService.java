@@ -1,8 +1,10 @@
 package com.sender.service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.sender.bots.AdminBot;
+import com.sender.bots.DonateTelegramBot;
 import com.sender.bots.SenderTelegramBot;
 import com.sender.bots.VkBot;
 import com.sender.dao.CompanyDAO;
@@ -21,20 +23,22 @@ public class DatabaseService implements Runnable {
     private final SenderTelegramBot bot;
     private final AdminBot adminBot;
     private final VkBot vkBot;
+    private final DonateTelegramBot donateBot;
     private final String STATUS_PLATINA = "37851406";
     private final String STATUS_GOLD = "36691654";
     private final String STATUS_SILVER = "37851409";
     private final String STATUS_BRONZE = "37851127";
-    private final String ADDED_TAG_JSON = "{\"id\": 83057,\"name\": \"Добавлен\"}";
+    private final JSONObject ADDED_TAG_JSON = JSON.parseObject("{\"id\": 83057,\"name\": \"Добавлен\"}");
     private String lead_id = "";
     private boolean sendToChats = true;
 
-    public DatabaseService(AmoRequestService requestService, EntityManagerService entityManager, SenderTelegramBot bot, AdminBot adminBot, VkBot vkBot) {
+    public DatabaseService(AmoRequestService requestService, EntityManagerService entityManager, SenderTelegramBot bot, AdminBot adminBot, VkBot vkBot, DonateTelegramBot donateBot) {
         this.requestService = requestService;
         this.vkBot = vkBot;
         this.entityManager = entityManager;
         this.bot = bot;
         this.adminBot = adminBot;
+        this.donateBot = donateBot;
         this.log = LoggerFactory.getLogger(DatabaseService.class);
     }
 
@@ -126,6 +130,7 @@ public class DatabaseService implements Runnable {
                     }
                     if (this.sendToChats) {
                         this.bot.sendLeadInfo(company);
+                        this.donateBot.sendLeadInfo(company);
                         this.vkBot.sendPost(company);
                         company.setIsPosted(true);
                         builder.append("Сделка запощена, статус обновлен").append("\n");

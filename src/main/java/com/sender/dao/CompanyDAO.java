@@ -229,7 +229,7 @@ public class CompanyDAO {
         return resultString.toString().trim();
     }
 
-    private String getDateString() {
+    public String getDateString() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(Long.parseLong(registrationDate) * 1000);
         StringBuilder dateString = new StringBuilder();

@@ -6,6 +6,7 @@ import com.sender.dao.CompanyDAO;
 import com.sender.service.EntityManagerService;
 import com.sender.service.ExcelService;
 import com.sender.service.SearchService;
+import com.sender.service.WordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class AdminController {
     private Logger log;
     private EntityManagerService entityManager;
     private SearchService searchService;
+    private final String WORD_DOC = "word";
+    private final String EXCEL_DOC = "excel";
+    private final String PDF_DOC = "pdf";
 
     @Autowired
     public AdminController(EntityManagerService entityManager, SearchService searchService) {
@@ -163,20 +167,31 @@ public class AdminController {
         }
     }
 
-    @PostMapping(value = "/admin/search", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<Resource> getSearchObject(@RequestParam MultiValueMap params) {
+    @PostMapping(value = "/admin/search/{resultDoc}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<Resource> getSearchObject(@RequestParam MultiValueMap params, @PathVariable String resultDoc) {
         if (params != null) {
             System.out.println(params);
-            File file;
-            InputStreamResource resource;
             try {
                 List<CompanyDAO> searchResult = searchService.searchCompanies(params);
                 log.info("SEARCH: {} \n FOUND: {}", params, searchResult.size());
                 String admin = String.valueOf(params.getFirst("mode"));
-                file = ExcelService.createExcelFile(searchResult, admin);
+                File file = null;
                 HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=otchet.xls");
-                resource = new InputStreamResource(new FileInputStream(file));
+                switch (resultDoc){
+                    case WORD_DOC:
+                        file = WordService.createWordFile(searchResult, admin);
+                        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=otchet.docx");
+                        break;
+                    case EXCEL_DOC:
+                        file = ExcelService.createExcelFile(searchResult, admin);
+                        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=otchet.xls");
+                        break;
+                    case PDF_DOC:
+                        file = WordService.createPdfFile(searchResult, admin);
+                        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=otchet.pdf");
+                        break;
+                }
+                InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
                 return ResponseEntity.ok()
                         .headers(headers)
                         .contentLength(file.length())

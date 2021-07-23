@@ -14,9 +14,11 @@ public class PropertiesStorage {
     public static String AMO_REDIRECT_URL;
     public static String AMO_BASE_URL;
     public static String TELEGRAM_BOT_TOKEN;
+    public static String TELEGRAM_DONATE_BOT_TOKEN;
     public static String TELEGRAM_ADMINBOT_TOKEN;
     public static Long TELEGRAM_GROUP_ID;
     public static Long TELEGRAM_CHAT_ID;
+    public static Long TELEGRAM_DONATE_CHAT_ID;
     public static Long TELEGRAM_ADMIN_ID;
     public static String VK_ACCESS_TOKEN;
     public static Integer VK_GROUP_ID;
@@ -52,6 +54,8 @@ public class PropertiesStorage {
             //System.out.println(TELEGRAM_ADMINBOT_TOKEN);
             TELEGRAM_ADMIN_ID = Long.parseLong(properties.getProperty("telegram.admin.chatId"));
             //System.out.println(TELEGRAM_ADMIN_ID);
+            TELEGRAM_DONATE_BOT_TOKEN = properties.getProperty("telegram.donate.token");
+            TELEGRAM_DONATE_CHAT_ID = Long.parseLong(properties.getProperty("telegram.donate.chatId"));
             VK_ACCESS_TOKEN = properties.getProperty("vk.token");
             //System.out.println(VK_ACCESS_TOKEN);
             VK_GROUP_ID = Integer.parseInt(properties.getProperty("vk.groupId"));
