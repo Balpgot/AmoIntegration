@@ -56,6 +56,14 @@ public class VkBot {
         message.append("Адрес ").append(company.getAddress()).append("\n");
         //message.append("Адрес можно оставить: ").append(company.getKeepAddress()).append("\n");
         message.append("ОКВЭД ").append(company.getOkvedString()).append("\n");
+        String cpo = company.getCpo();
+        if(!cpo.equalsIgnoreCase("Нет")) {
+            message.append("СРО ").append(cpo).append("\n");
+        }
+        String licences = company.getLicensesString();
+        if(!licences.equalsIgnoreCase("Нет")) {
+            message.append("Лицензии ").append(licences).append("\n");
+        }
         if(company.getOborot().equalsIgnoreCase("да")){
             message.append("С оборотами").append("\n");
         }
@@ -65,6 +73,7 @@ public class VkBot {
         //message.append("Обороты: ").append(company.getOborot()).append("\n");
         //message.append("Отчетность: ").append(company.getReport()).append("\n");
         //message.append("Наличие ЭЦП: ").append(company.getEcp()).append("\n");
+
         //message.append("СРО: ").append(company.getCpo()).append("\n");
         //message.append("Лицензии: ").append(company.getLicensesString()).append("\n");
         //message.append("Госконтракты: ").append(company.getGoszakaz()).append("\n");

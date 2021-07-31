@@ -157,6 +157,20 @@ public class WordService {
         mainTextRun.setText(builder.toString());
         mainTextRun.addBreak();
         builder.setLength(0);
+        String cpo = company.getCpo();
+        if(!cpo.equalsIgnoreCase("Нет")) {
+            builder.append("СРО ").append(cpo);
+            mainTextRun.setText(builder.toString());
+            mainTextRun.addBreak();
+            builder.setLength(0);
+        }
+        String licences = company.getLicensesString();
+        if(!licences.equalsIgnoreCase("Нет")) {
+            builder.append("Лицензии ").append(licences);
+            mainTextRun.setText(builder.toString());
+            mainTextRun.addBreak();
+            builder.setLength(0);
+        }
         if (company.getOborot().equalsIgnoreCase("Нет")) {
             builder.append("Без оборотов");
         }

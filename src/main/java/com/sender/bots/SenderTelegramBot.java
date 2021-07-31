@@ -42,6 +42,14 @@ public class SenderTelegramBot {
         message.append("Адрес ").append(company.getAddress()).append("\n");
         //message.append("Адрес можно оставить: ").append(company.getKeepAddress()).append("\n");
         message.append("ОКВЭД ").append(company.getOkvedString()).append("\n");
+        String cpo = company.getCpo();
+        if(!cpo.equalsIgnoreCase("Нет")) {
+            message.append("СРО ").append(cpo).append("\n");
+        }
+        String licences = company.getLicensesString();
+        if(!licences.equalsIgnoreCase("Нет")) {
+            message.append("Лицензии ").append(licences).append("\n");
+        }
         if(company.getOborot().equalsIgnoreCase("да")){
             message.append("С оборотами").append("\n");
         }
