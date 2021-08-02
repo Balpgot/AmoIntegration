@@ -42,6 +42,7 @@ public class SenderTelegramBot {
         message.append("Адрес ").append(company.getAddress()).append("\n");
         //message.append("Адрес можно оставить: ").append(company.getKeepAddress()).append("\n");
         message.append("ОКВЭД ").append(company.getOkvedString()).append("\n");
+        message.append("Налоговая ").append(company.getNalog()).append("\n");
         String cpo = company.getCpo();
         if(!cpo.equalsIgnoreCase("Нет")) {
             message.append("СРО ").append(cpo).append("\n");

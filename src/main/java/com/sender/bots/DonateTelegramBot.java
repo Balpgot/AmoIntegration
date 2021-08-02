@@ -33,6 +33,7 @@ public class DonateTelegramBot {
         message.append("Счета ").append(company.getBankAccounts()).append("\n");
         message.append("Адрес ").append(company.getAddress()).append("\n");
         message.append("ОКВЭД ").append(company.getOkvedString()).append("\n");
+        message.append("Налоговая ").append(company.getNalog()).append("\n");
         String cpo = company.getCpo();
         if(!cpo.equalsIgnoreCase("Нет")) {
             message.append("СРО ").append(cpo).append("\n");
